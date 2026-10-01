@@ -1,4 +1,4 @@
-rem You can select dispaly board build options: JC8048W550C, WAVESHARE_S3_LCD5, WAVESHARE_S3_LCD7, Sunton_S3_LCD7
+rem You can select dispaly board build options: JC8048W550C, WAVESHARE_S3_LCD5, WAVESHARE_S3_LCD7, WAVESHARE_S3_LCD7B, Sunton_S3_LCD7
 
 arduino-cli -j16 compile -b esp32:esp32:esp32s3:FlashSize=8M,PartitionScheme=huge_app,PSRAM=opi --build-property "build.defines=-DBOARD_HAS_PSRAM -DWAVESHARE_S3_LCD7" --build-property compiler.optimization_flags=-Os firmware.ino --output-dir ./artifacts -v
 

@@ -12,6 +12,9 @@
 #elif defined(WAVESHARE_S3_LCD7)
 #define CAN_RX_PIN GPIO_NUM_19  
 #define CAN_TX_PIN GPIO_NUM_20
+#elif defined(WAVESHARE_S3_LCD7B)  // shared with native USB, EXIO5 high selects CAN
+#define CAN_RX_PIN GPIO_NUM_19
+#define CAN_TX_PIN GPIO_NUM_20
 #elif defined(WAVESHARE_S3_LCD5)
 #define CAN_RX_PIN GPIO_NUM_16  
 #define CAN_TX_PIN GPIO_NUM_15

@@ -5,6 +5,7 @@
 
 // #define JC8048W550C             // JC8048W550C 5inch C-touch
 // #define WAVESHARE_S3_LCD7       // Waveshare:ESP32-S3-Touch-LCD-7
+// #define WAVESHARE_S3_LCD7B      // Waveshare:ESP32-S3-Touch-LCD-7B 1024x600 (UI 800x480 centered)
 // #define WAVESHARE_S3_LCD5       // Waveshare:ESP32-S3-Touch-LCD-5 800x480
 // #define Sunton_S3_LCD7          // Sunton_S3_LCD7 
 
