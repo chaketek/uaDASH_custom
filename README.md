@@ -99,9 +99,11 @@ A: ESP32-S3-Touch-LCD-5 from Waveshare has both on-board CAN transceiver and on-
 
 ### Q: why only 800x480?
 
-A: With limited software developers availability, we focus on only one resolution. Sorry, no 1024x600.
+A: the UI is designed at 800x480. `tools/eez_build.py` also generates a 1024x600 variant (scaled 1.25x),
+used by the Waveshare ESP32-S3-Touch-LCD-7B.
 
 ### Q: To edit the dash, is it just a world of manually editing the ui_mainscreen.c?
 
-A: made with https://squareline.io/
+A: the UI is designed with [EEZ Studio](https://www.envox.eu/studio/), see [eez/README.md](eez/README.md)
+(the original SquareLine Studio export is kept in `squareline_prj/export/`).
 

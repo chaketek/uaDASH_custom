@@ -11,6 +11,8 @@
 
 #include <esp_lcd_panel_rgb.h>
 #include <esp_lcd_panel_ops.h>
+#include <esp_cpu.h>
+#include <esp32s3/rom/cache.h>
 
 int brightnessVal = 205;
 #ifdef PERF_MONITOR
@@ -23,6 +25,67 @@ static lgfx::Touch_GT911 touch;
 static uint8_t expanderOut = 0xFF;
 
 static SemaphoreHandle_t panelReady;
+
+// Bounce buffer filling.
+// The driver picks the bounce buffer to refill by counting DMA EOF interrupts
+// and never resets that count, so a single lost EOF interrupt (two EOFs while
+// the interrupt is held off by heavy PSRAM traffic, e.g. fast screen changes)
+// shifts the image by LCD_BOUNCE_LINES for good. The buffers are filled here
+// instead (no_fb mode) with our own count, restarted at every VSYNC where the
+// driver restarts the DMA from bounce buffer 0 (CONFIG_LCD_RGB_RESTART_IN_VSYNC),
+// so a lost interrupt spoils one frame at most.
+#if !CONFIG_LCD_RGB_RESTART_IN_VSYNC
+#error "the bounce buffer resync needs CONFIG_LCD_RGB_RESTART_IN_VSYNC"
+#endif
+#define BB_PX (LCD_WIDTH * LCD_BOUNCE_LINES)
+#define BB_CHUNKS (LCD_HEIGHT / LCD_BOUNCE_LINES)
+static_assert(LCD_HEIGHT % LCD_BOUNCE_LINES == 0, "LCD_BOUNCE_LINES must divide LCD_HEIGHT");
+// the driver prefills right after the VSYNC callback (done there already);
+// the first DMA EOF comes LCD_BOUNCE_LINES lines later at the earliest
+#define PREFILL_WINDOW_CYCLES (CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ * 200)  // 200us
+
+static uint16_t *bounceBuf[2];
+static int bounceChunk[2] = { -1, -1 };  // part of the frame each buffer holds
+static int initFills = 0;
+static int eofCount = 0;  // DMA EOFs since the last restart
+static uint32_t vsyncCycles = 0;
+
+static IRAM_ATTR void fillBounce(int b, int chunk) {
+  memcpy(bounceBuf[b], (uint16_t *)framebuffer + chunk * BB_PX, BB_PX * sizeof(uint16_t));
+  bounceChunk[b] = chunk;
+  int next = chunk + 1 < BB_CHUNKS ? chunk + 1 : 0;
+  Cache_Start_DCache_Preload((uint32_t)((uint16_t *)framebuffer + next * BB_PX), BB_PX * sizeof(uint16_t), 0);
+}
+
+static IRAM_ATTR bool onBounceEmpty(esp_lcd_panel_handle_t, void *buf, int, int, void *) {
+  if (initFills < 2) {
+    // start of the transmission: buffer 0 then buffer 1
+    bounceBuf[initFills] = (uint16_t *)buf;
+    fillBounce(initFills, initFills);
+    initFills++;
+    eofCount = 0;
+  } else if (esp_cpu_get_cycle_count() - vsyncCycles >= PREFILL_WINDOW_CYCLES) {
+    // DMA EOF: buffer (n & 1) has been sent, it gets the part after the other buffer
+    int n = eofCount++;
+    fillBounce(n & 1, (n + 2) % BB_CHUNKS);
+  }
+  return false;
+}
+
+static IRAM_ATTR bool onVsync(esp_lcd_panel_handle_t, const esp_lcd_rgb_panel_event_data_t *, void *) {
+  // the driver restarts the DMA from bounce buffer 0 after this callback
+  if (initFills == 2) {
+    if (bounceChunk[0] != 0) {
+      fillBounce(0, 0);
+    }
+    if (bounceChunk[1] != 1) {
+      fillBounce(1, 1);
+    }
+  }
+  eofCount = 0;
+  vsyncCycles = esp_cpu_get_cycle_count();
+  return false;
+}
 
 static void expanderWrite(uint8_t reg, uint8_t val) {
   uint8_t buf[2] = { reg, val };
@@ -64,8 +127,8 @@ static void panelInit() {
   cfg.timings.flags.pclk_idle_high = LCD_PCLK_IDLE_HIGH;
   cfg.data_width = 16;
   cfg.bits_per_pixel = 16;
-  cfg.num_fbs = 1;
-  cfg.bounce_buffer_size_px = LCD_WIDTH * LCD_BOUNCE_LINES;
+  cfg.flags.no_fb = 1;  // the bounce buffers are filled by onBounceEmpty
+  cfg.bounce_buffer_size_px = BB_PX;
   cfg.dma_burst_size = 64;
   cfg.hsync_gpio_num = LCD_PIN_HSYNC;
   cfg.vsync_gpio_num = LCD_PIN_VSYNC;
@@ -81,14 +144,17 @@ static void panelInit() {
   for (int i = 0; i < 16; i++) {
     cfg.data_gpio_nums[i] = data_pins[i];
   }
-  cfg.flags.fb_in_psram = 1;
+  framebuffer = heap_caps_aligned_calloc(64, LCD_WIDTH * LCD_HEIGHT, sizeof(uint16_t), MALLOC_CAP_SPIRAM);
+  assert(framebuffer);
 
   ESP_ERROR_CHECK(esp_lcd_new_rgb_panel(&cfg, &panel));
+  esp_lcd_rgb_panel_event_callbacks_t cbs;
+  memset(&cbs, 0, sizeof(cbs));
+  cbs.on_vsync = onVsync;
+  cbs.on_bounce_empty = onBounceEmpty;
+  ESP_ERROR_CHECK(esp_lcd_rgb_panel_register_event_callbacks(panel, &cbs, NULL));
   ESP_ERROR_CHECK(esp_lcd_panel_reset(panel));
   ESP_ERROR_CHECK(esp_lcd_panel_init(panel));
-
-  esp_lcd_rgb_panel_get_frame_buffer(panel, 1, &framebuffer);
-  memset(framebuffer, 0, LCD_WIDTH * LCD_HEIGHT * sizeof(uint16_t));
 }
 
 // interrupt of the panel is allocated on the core that creates it

@@ -6,3 +6,7 @@ build/
 sdkconfig
 sdkconfig.old
 managed_components/
+
+# EEZ Studio editor state
+*.eez-project-ui-state
+.eez-project-build

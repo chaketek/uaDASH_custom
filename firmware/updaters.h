@@ -1,6 +1,7 @@
 #pragma once
 
-#include "ui.h"
+#include "ui_eez.h"
+#include "events.h"
 #include "config.h"
 #include "twai_lib.h"
 #include "mutex.h"
@@ -38,6 +39,7 @@ typedef struct struct_message {
   float map;
   float oilPress;
   float fuelPress;
+  int gear;  // rusEFI CurrentGear, 0: neutral
   // bool mainRelay;
   // bool fuelPump;
   // bool fan1;
@@ -80,6 +82,7 @@ extern "C" {
   void fastUpdate();
   void midUpdate();
   void slowUpdate();
+  void dashboardInit();
 
   void getWarningsSet();
   void updateWarningsSet();

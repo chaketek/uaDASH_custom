@@ -241,7 +241,7 @@
 // The framebuffer scanout is limited by PSRAM bandwidth (Espressif ESP-FAQ:
 // octal PSRAM 80MHz ~22MHz pclk, 120MHz ~30MHz). Low refresh makes the panel flicker.
 // If the bounce buffers underrun (screen change redraws everything) the image
-// can stay shifted by LCD_BOUNCE_LINES, the driver doesn't resync this case.
+// is shifted by LCD_BOUNCE_LINES, display_driver_rgb.cpp resyncs it at the next VSYNC.
 // Every combination below passed the screen change test (see the ADR).
 #if CONFIG_SPIRAM_SPEED >= 120
 // ESP-IDF build with 120MHz PSRAM: ~36.8Hz refresh

@@ -33,9 +33,9 @@ Works, but the sdkconfig can't be changed: the panel runs at 16MHz (~17.5Hz refr
 
 ### Notes
 
-* The UI runs at native 1024x600. The SquareLine layout (800x480) is scaled at compile time (`ui_scale.h`: `UI_SX()`/`UI_SY()`), and fonts are 1.25x versions (`ui_font_*_hires.c`, generated with lv_font_conv from the same TTF/OTF). Other boards are unchanged.
+* The UI runs at native 1024x600: the EEZ Studio design (800x480) is scaled 1.25x into its own generated variant (`firmware/src/ui_eez/1024x600`, see [eez/README.md](eez/README.md)). Other boards use the 800x480 variant.
 * Display driver is ESP-IDF `esp_lcd` RGB panel with bounce buffers (`display_driver_rgb.cpp`), not LovyanGFX. LVGL renders into internal RAM and the flush copies into the PSRAM framebuffer. LovyanGFX is used only for the GT911 touch.
-* Pixel clock is chosen from the sdkconfig (`display_driver.h`): ESP-IDF build 24MHz (~26Hz), 120MHz PSRAM 30MHz (~37Hz), Arduino IDE 16MHz (~17.5Hz). Higher clocks make the image jump while the whole screen is redrawn.
+* Pixel clock is chosen from the sdkconfig (`display_driver.h`): ESP-IDF build 24MHz (~26Hz), 120MHz PSRAM 30MHz (~37Hz), Arduino IDE 16MHz (~17.5Hz). Higher clocks make the image jump while the whole screen is redrawn. The bounce buffers are filled by the firmware and resynced at every VSYNC, so a late refill spoils one frame at most.
 * Screen changes use a fade instead of the move animation (full screen moving is too heavy for the framebuffer bandwidth).
 * Backlight brightness (swipe up/down) is controlled by the on-board IO expander PWM, no soldering needed.
 * CAN uses the on-board TJA1051 transceiver (GPIO19 RX / GPIO20 TX). These pins are shared with the native USB port, the firmware switches EXIO5 to CAN mode, so the native USB Type-C port does not work while the dash is running.

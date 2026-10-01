@@ -1,4 +1,5 @@
 #include "updaters.h"
+#include <climits>
 
 ESP32S3_TWAI can;
 Preferences preferences;
@@ -144,6 +145,9 @@ void TaskCANReceiver(void *pvParameters)
 
           switch (id)
           {
+          case 0x200:
+            myData.gear = data[5];  // CurrentGear
+            break;
           case 0x201:
             myData.rpm = (data[1] << 8 | data[0]);
             myData.speed = data[6];
@@ -185,6 +189,7 @@ void TaskCANReceiver(void *pvParameters)
       myData.fuelPress = tri * 500 / 4000;
       myData.fuelLevel = tri * 100 / 4000;
       myData.Vbat = 11 + tri * 3.0 / 4000;
+      myData.gear = tri * 6 / 4000;
       xSemaphoreGive(dataMutex);
     }
 #endif
@@ -193,81 +198,141 @@ void TaskCANReceiver(void *pvParameters)
 }
 
 // Widget updaters
+// Main screen: FULLMONI-WIDE "eez002" dashboard design
+// (bindings ported from FULLMONI-WIDE Firmware/eez/eez002/ui_binding/ui_dashboard.c)
+
+#define BAR_WATER_MIN 0
+#define BAR_WATER_MAX 130     // degC
+#define BAR_IAT_MIN 0
+#define BAR_IAT_MAX 70        // degC
+#define BAR_OILTEMP_MIN 0
+#define BAR_OILTEMP_MAX 160   // degC
+#define BAR_MAP_MIN 0
+#define BAR_MAP_MAX 300       // kPa
+#define BAR_OILPRESS_MIN 0
+#define BAR_OILPRESS_MAX 500  // kPa
+#define BAR_BATT_MIN 100      // 0.1V
+#define BAR_BATT_MAX 160      // 0.1V
+
+#define WARN_WATER_COLD 60    // degC, below: cold engine indicator
+#define WARN_FUEL_SHOW 5      // %, fuel warning on below, off above WARN_FUEL_HIDE
+#define WARN_FUEL_HIDE 10
+#define STARTUP_TELLTALE_MS 3000  // all warning lights on after power up (lamp check)
+
+#define TACHO_MAX_RPM 9000
+#define PEAK_HOLD_MS 500
+#define PEAK_FALL_RPM_PER_UPDATE 100  // per fast update (20ms) -> 5000 rpm/s
+
+static uint32_t telltaleStart;
+static bool telltaleDone;
+static bool warnFuel;
+static uint32_t rpmPeak;
+static uint32_t peakHoldStart;
+static bool peakFalling;
+
+// needle angle in 0.1 deg: 0 rpm -> 90 deg, 9000 rpm -> 360 deg
+static int16_t rpmToAngle(uint32_t rpm)
+{
+  if (rpm > TACHO_MAX_RPM)
+    rpm = TACHO_MAX_RPM;
+  return 900 + rpm * 2700 / TACHO_MAX_RPM;
+}
+
+static void setVisible(lv_obj_t *obj, bool visible)
+{
+  if (visible)
+    lv_obj_clear_flag(obj, LV_OBJ_FLAG_HIDDEN);
+  else
+    lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+}
+
+static void showAllWarnings(bool on)
+{
+  setVisible(objects.ui_img_warn_master, on);
+  setVisible(objects.ui_img_warn_oil_press, on);
+  setVisible(objects.ui_img_warn_water_cold, on);
+  setVisible(objects.ui_img_warn_water_hot, on);
+  setVisible(objects.ui_img_warn_battery, on);
+  setVisible(objects.ui_img_warn_fuel, on);
+}
+
+// call once after ui_init()
+void dashboardInit()
+{
+  lv_bar_set_range(objects.ui_bar_water_temp, BAR_WATER_MIN, BAR_WATER_MAX);
+  lv_bar_set_range(objects.ui_bar_iat, BAR_IAT_MIN, BAR_IAT_MAX);
+  lv_bar_set_range(objects.ui_bar_oil_temp, BAR_OILTEMP_MIN, BAR_OILTEMP_MAX);
+  lv_bar_set_range(objects.ui_bar_map, BAR_MAP_MIN, BAR_MAP_MAX);
+  lv_bar_set_range(objects.ui_bar_oil_press, BAR_OILPRESS_MIN, BAR_OILPRESS_MAX);
+  lv_bar_set_range(objects.ui_bar_battery, BAR_BATT_MIN, BAR_BATT_MAX);
+
+  lv_img_set_angle(objects.ui_image_rpm, rpmToAngle(0));
+  lv_img_set_angle(objects.ui_image_peak_rpm, rpmToAngle(0));
+  lv_arc_set_value(objects.ui_arc_rpm, 0);
+  lv_label_set_text(objects.ui_lbl_rpm, "0");
+
+  showAllWarnings(true);
+  telltaleStart = lv_tick_get();
+  telltaleDone = false;
+  rpmPeak = 0;
+  peakFalling = false;
+  peakHoldStart = lv_tick_get();
+
+  // force the first update of every value
+  old_myData.rpm = -1;
+  old_myData.clt = INT_MIN;
+  old_myData.iat = INT_MIN;
+  old_myData.oilTemp = INT_MIN;
+  old_myData.fuelLevel = -1;
+  old_myData.gear = -1;
+  old_myData.afr = -1;
+  old_myData.Vbat = -1;
+  old_myData.map = -1;
+  old_myData.oilPress = -1;
+}
+
+static void updateRpmPeak(uint32_t rpm)
+{
+  uint32_t now = lv_tick_get();
+  if (rpm >= rpmPeak)
+  {
+    rpmPeak = rpm;
+    peakHoldStart = now;
+    peakFalling = false;
+  }
+  else if (!peakFalling)
+  {
+    peakFalling = now - peakHoldStart >= PEAK_HOLD_MS;
+  }
+  if (peakFalling)
+  {
+    uint32_t diff = rpmPeak - rpm;
+    rpmPeak = diff > PEAK_FALL_RPM_PER_UPDATE ? rpmPeak - PEAK_FALL_RPM_PER_UPDATE : rpm;
+  }
+  lv_img_set_angle(objects.ui_image_peak_rpm, rpmToAngle(rpmPeak));
+}
+
 void fastUpdate()
 {
   if (xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE)
   {
-#ifdef DEBUG
-    // Serial.println("fastUpdate");
-#endif
     if (xSemaphoreTake(uiMutex, portMAX_DELAY) == pdTRUE)
     {
-      // RPM
+      // RPM: needle, arc, peak hold, value
+      uint32_t rpm = myData.rpm < 0 ? 0 : myData.rpm;
       if (myData.rpm != old_myData.rpm)
       {
-        if (myData.rpm == 0)
-        {
-          lv_label_set_text(ui_rpmVal0, "0");
-          lv_bar_set_value(ui_rpmBar0, 0, LV_ANIM_OFF);
-        }
-        else
-        {
-          int val = myData.rpm / 10;
-          lv_bar_set_value(ui_rpmBar0, val, LV_ANIM_OFF);
-          if (val > warningSet.rpm)
-          {
-            lv_obj_set_style_bg_color(ui_rpmBar0, lv_color_hex(0xFF0000), LV_PART_INDICATOR | LV_STATE_DEFAULT);
-          }
-          else
-          {
-            lv_obj_set_style_bg_color(ui_rpmBar0, lv_color_hex(0xE0FF00), LV_PART_INDICATOR | LV_STATE_DEFAULT);
-          }
-          lv_label_set_text_fmt(ui_rpmVal0, "%d0", val);
-        }
+        lv_img_set_angle(objects.ui_image_rpm, rpmToAngle(rpm));
+        lv_arc_set_value(objects.ui_arc_rpm, rpm > TACHO_MAX_RPM ? TACHO_MAX_RPM : rpm);
+        lv_label_set_text_fmt(objects.ui_lbl_rpm, "%u", (unsigned)rpm);
         old_myData.rpm = myData.rpm;
       }
-      // MAP
-      if (myData.map != old_myData.map)
-      {
-        if (warningSet.isTurbo)
-        {
-          float d_map = (myData.map / 100) - 1.0;
-          if (d_map >= 0)
-          {
-            lv_obj_set_style_bg_color(ui_mapBar0, lv_color_hex(0xE0FF00), LV_PART_INDICATOR | LV_STATE_DEFAULT);
-          }
-          else
-          {
-            lv_obj_set_style_bg_color(ui_mapBar0, lv_color_hex(0x01FF71), LV_PART_INDICATOR | LV_STATE_DEFAULT);
-          }
-          lv_label_set_text_fmt(ui_mapVal0, "%.2f", d_map);
-        }
-        else
-        {
-          lv_label_set_text_fmt(ui_mapVal0, "%.0f", myData.map);
-        }
-        lv_bar_set_value(ui_mapBar0, myData.map - 100, LV_ANIM_OFF);
-        old_myData.map = myData.map;
-      }
+      updateRpmPeak(rpm);
       // AFR
       if (myData.afr != old_myData.afr)
       {
-        int l_bar = myData.afr * 10 - 150;
-        lv_bar_set_value(ui_afrBar0, l_bar, LV_ANIM_OFF);
-        lv_label_set_text_fmt(ui_afrVal0, "%0.1f", myData.afr);
-
-        if ((l_bar > 10) || (l_bar < -25))
-        {
-          lv_obj_set_style_bg_color(ui_afrBar0, lv_color_hex(0xFF0000), LV_PART_INDICATOR | LV_STATE_DEFAULT);
-        }
-        else if (l_bar > 0)
-        {
-          lv_obj_set_style_bg_color(ui_afrBar0, lv_color_hex(0x00FFFF), LV_PART_INDICATOR | LV_STATE_DEFAULT);
-        }
-        else
-        {
-          lv_obj_set_style_bg_color(ui_afrBar0, lv_color_hex(0xE0FF00), LV_PART_INDICATOR | LV_STATE_DEFAULT);
-        }
+        int afr10 = (int)(myData.afr * 10 + 0.5f);
+        lv_label_set_text_fmt(objects.ui_lbl_afr, "%d.%d", afr10 / 10, afr10 % 10);
         old_myData.afr = myData.afr;
       }
       xSemaphoreGive(uiMutex);
@@ -280,46 +345,31 @@ void midUpdate()
 {
   if (xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE)
   {
-#ifdef DEBUG
-    // Serial.println("midUpdate");
-#endif
     if (xSemaphoreTake(uiMutex, portMAX_DELAY) == pdTRUE)
     {
-      // VSS
-      if (myData.speed != old_myData.speed)
-      {
-        lv_label_set_text_fmt(ui_speedVal0, "%d", myData.speed);
-        old_myData.speed = myData.speed;
-      }
-      // OIL Press
+      // OIL press, shown in 100kPa
       if (myData.oilPress != old_myData.oilPress)
       {
-        lv_bar_set_value(ui_oilPressBar0, myData.oilPress, LV_ANIM_ON);
-        lv_label_set_text_fmt(ui_oilPressVal0, "%.1f", myData.oilPress / 100);
-        if (myData.oilPress > warningSet.oilPress)
-        {
-          lv_obj_set_style_bg_color(ui_oilPressBar0, lv_color_hex(0xE6FF00), LV_PART_INDICATOR | LV_STATE_DEFAULT);
-        }
-        else
-        {
-          lv_obj_set_style_bg_color(ui_oilPressBar0, lv_color_hex(0xFF0000), LV_PART_INDICATOR | LV_STATE_DEFAULT);
-        }
+        int op = (int)(myData.oilPress / 10 + 0.5f);
+        lv_bar_set_value(objects.ui_bar_oil_press, (int)myData.oilPress, LV_ANIM_OFF);
+        lv_label_set_text_fmt(objects.ui_lbl_oil_press, "%d.%d", op / 10, op % 10);
         old_myData.oilPress = myData.oilPress;
       }
-      // Fuel Press
-      if (myData.fuelPress != old_myData.fuelPress)
+      // MAP kPa
+      if (myData.map != old_myData.map)
       {
-        lv_bar_set_value(ui_fuelPressBar0, myData.fuelPress, LV_ANIM_ON); /// set low press
-        lv_label_set_text_fmt(ui_fuelPressVal0, "%.1f", myData.fuelPress / 100);
-        if (myData.fuelPress > warningSet.fuelPress)
-        {
-          lv_obj_set_style_bg_color(ui_fuelPressBar0, lv_color_hex(0xE6FF00), LV_PART_INDICATOR | LV_STATE_DEFAULT);
-        }
+        lv_bar_set_value(objects.ui_bar_map, (int)myData.map, LV_ANIM_OFF);
+        lv_label_set_text_fmt(objects.ui_lbl_map, "%d", (int)(myData.map + 0.5f));
+        old_myData.map = myData.map;
+      }
+      // Gear, 0: neutral
+      if (myData.gear != old_myData.gear)
+      {
+        if (myData.gear <= 0)
+          lv_label_set_text(objects.ui_lbl_gear, "N");
         else
-        {
-          lv_obj_set_style_bg_color(ui_fuelPressBar0, lv_color_hex(0xFF0000), LV_PART_INDICATOR | LV_STATE_DEFAULT);
-        }
-        old_myData.fuelPress = myData.fuelPress;
+          lv_label_set_text_fmt(objects.ui_lbl_gear, "%d", myData.gear);
+        old_myData.gear = myData.gear;
       }
       xSemaphoreGive(uiMutex);
     }
@@ -329,113 +379,57 @@ void midUpdate()
 
 void slowUpdate()
 {
-  if (changeMapWidget)
-  {
-    if (warningSet.isTurbo)
-    {
-      lv_label_set_text(ui_mapLabel1, "boost");
-      lv_bar_set_range(ui_mapBar0, -100, 300);
-      lv_label_set_text(ui_LabelMapMax, "3");
-      lv_obj_clear_flag(ui_LabelMapT0, LV_OBJ_FLAG_HIDDEN);
-      lv_label_set_text(ui_LabelMapMid, "1");
-      lv_obj_clear_flag(ui_LabelMapT2, LV_OBJ_FLAG_HIDDEN);
-      lv_label_set_text(ui_LabelMapMin, "-1");
-      lv_label_set_text_fmt(ui_mapVal0, "%.2f", myData.map / 100);
-    }
-    else
-    {
-      lv_label_set_text(ui_mapLabel1, "map");
-      lv_bar_set_range(ui_mapBar0, -100, 0);
-      lv_label_set_text(ui_LabelMapMax, "100");
-      lv_obj_add_flag(ui_LabelMapT0, LV_OBJ_FLAG_HIDDEN);
-      lv_label_set_text(ui_LabelMapMid, "50");
-      lv_obj_add_flag(ui_LabelMapT2, LV_OBJ_FLAG_HIDDEN);
-      lv_label_set_text(ui_LabelMapMin, "0");
-      lv_label_set_text_fmt(ui_mapVal0, "%.0f", myData.map);
-    }
-    changeMapWidget = false;
-  }
-
   if (xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE)
   {
-#ifdef DEBUG
-    // Serial.println("slowUpdate");
-#endif
     if (xSemaphoreTake(uiMutex, portMAX_DELAY) == pdTRUE)
     {
-      // CLT
       if (myData.clt != old_myData.clt)
       {
-        lv_bar_set_value(ui_cltBar0, myData.clt, LV_ANIM_ON);
-        lv_label_set_text_fmt(ui_cltVal0, "%d", myData.clt);
-        if (myData.clt < warningSet.clt)
-        {
-          lv_obj_set_style_bg_color(ui_cltBar0, lv_color_hex(0xE6FF00), LV_PART_INDICATOR | LV_STATE_DEFAULT);
-        }
-        else
-        {
-          lv_obj_set_style_bg_color(ui_cltBar0, lv_color_hex(0xFF0000), LV_PART_INDICATOR | LV_STATE_DEFAULT);
-        }
+        lv_bar_set_value(objects.ui_bar_water_temp, myData.clt, LV_ANIM_OFF);
+        lv_label_set_text_fmt(objects.ui_lbl_water_temp, "%d", myData.clt);
         old_myData.clt = myData.clt;
       }
-      // IAT
       if (myData.iat != old_myData.iat)
       {
-        lv_bar_set_value(ui_iatBar0, myData.iat, LV_ANIM_ON);
-        lv_label_set_text_fmt(ui_iatVal0, "%d", myData.iat);
-        if (myData.iat < warningSet.iat)
-        {
-          lv_obj_set_style_bg_color(ui_iatBar0, lv_color_hex(0xE6FF00), LV_PART_INDICATOR | LV_STATE_DEFAULT);
-        }
-        else
-        {
-          lv_obj_set_style_bg_color(ui_iatBar0, lv_color_hex(0xFF0000), LV_PART_INDICATOR | LV_STATE_DEFAULT);
-        }
+        lv_bar_set_value(objects.ui_bar_iat, myData.iat, LV_ANIM_OFF);
+        lv_label_set_text_fmt(objects.ui_lbl_iat, "%d", myData.iat);
         old_myData.iat = myData.iat;
       }
-      // OIL T
       if (myData.oilTemp != old_myData.oilTemp)
       {
-        lv_bar_set_value(ui_oilTempBar0, myData.oilTemp, LV_ANIM_ON);
-        lv_label_set_text_fmt(ui_oilTempVal1, "%d", myData.oilTemp);
-        if (myData.oilTemp < warningSet.oilTemp)
-        {
-          lv_obj_set_style_bg_color(ui_oilTempBar0, lv_color_hex(0xE6FF00), LV_PART_INDICATOR | LV_STATE_DEFAULT);
-        }
-        else
-        {
-          lv_obj_set_style_bg_color(ui_oilTempBar0, lv_color_hex(0xFF0000), LV_PART_INDICATOR | LV_STATE_DEFAULT);
-        }
+        lv_bar_set_value(objects.ui_bar_oil_temp, myData.oilTemp, LV_ANIM_OFF);
+        lv_label_set_text_fmt(objects.ui_lbl_oil_temp, "%d", myData.oilTemp);
         old_myData.oilTemp = myData.oilTemp;
       }
-      // Vbat
       if (myData.Vbat != old_myData.Vbat)
       {
-        if (myData.Vbat < warningSet.vBatt)
-        {
-          lv_obj_set_style_text_color(ui_vBattVal0, lv_color_hex(0xFF0000), LV_PART_MAIN | LV_STATE_DEFAULT);
-        }
-        else
-        {
-          lv_obj_set_style_text_color(ui_vBattVal0, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
-        }
-        lv_label_set_text_fmt(ui_vBattVal0, "%.1f", myData.Vbat);
+        int bv = (int)(myData.Vbat * 10 + 0.5f);
+        lv_bar_set_value(objects.ui_bar_battery, bv, LV_ANIM_OFF);
+        lv_label_set_text_fmt(objects.ui_lbl_battery, "%d.%d", bv / 10, bv % 10);
         old_myData.Vbat = myData.Vbat;
       }
-      // Fuel level
-      if (myData.fuelLevel != old_myData.fuelLevel)
+
+      // warning lights, all on for the lamp check after power up
+      if (!telltaleDone)
       {
-        lv_bar_set_value(ui_fuelLevelBar0, myData.fuelLevel, LV_ANIM_ON);
-        lv_label_set_text_fmt(ui_fuelLevelVal0, "%d", myData.fuelLevel);
-        if (myData.fuelLevel > 15)
-        {
-          lv_obj_set_style_bg_color(ui_fuelLevelBar0, lv_color_hex(0xFFFFFF), LV_PART_INDICATOR | LV_STATE_DEFAULT);
-        }
-        else
-        {
-          lv_obj_set_style_bg_color(ui_fuelLevelBar0, lv_color_hex(0xFF0000), LV_PART_INDICATOR | LV_STATE_DEFAULT);
-        }
-        old_myData.fuelLevel = myData.fuelLevel;
+        telltaleDone = lv_tick_get() - telltaleStart >= STARTUP_TELLTALE_MS;
+      }
+      if (telltaleDone)
+      {
+        if (myData.fuelLevel > WARN_FUEL_HIDE)
+          warnFuel = false;
+        else if (myData.fuelLevel < WARN_FUEL_SHOW)
+          warnFuel = true;
+        bool waterHot = myData.clt >= warningSet.clt;
+        bool waterCold = myData.clt < WARN_WATER_COLD;
+        bool oilPress = myData.oilPress < warningSet.oilPress;
+        bool battery = myData.Vbat < warningSet.vBatt;
+        setVisible(objects.ui_img_warn_water_hot, waterHot);
+        setVisible(objects.ui_img_warn_water_cold, waterCold && !waterHot);
+        setVisible(objects.ui_img_warn_oil_press, oilPress);
+        setVisible(objects.ui_img_warn_battery, battery);
+        setVisible(objects.ui_img_warn_fuel, warnFuel);
+        setVisible(objects.ui_img_warn_master, waterHot || oilPress || battery || warnFuel);
       }
       xSemaphoreGive(uiMutex);
     }
