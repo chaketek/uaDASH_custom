@@ -157,8 +157,8 @@ void ui_engineConfigScreen_screen_init(void)
     ui_LabelEngineConf = lv_label_create(ui_engineConfigScreen);
     lv_obj_set_width(ui_LabelEngineConf, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_LabelEngineConf, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_LabelEngineConf, 0);
-    lv_obj_set_y(ui_LabelEngineConf, -219);
+    lv_obj_set_x(ui_LabelEngineConf, UI_SX(0));
+    lv_obj_set_y(ui_LabelEngineConf, UI_SY(-219));
     lv_obj_set_align(ui_LabelEngineConf, LV_ALIGN_CENTER);
     lv_label_set_text(ui_LabelEngineConf, "ENGINE CONFIGURATION");
     lv_obj_set_style_text_color(ui_LabelEngineConf, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -168,8 +168,8 @@ void ui_engineConfigScreen_screen_init(void)
     ui_LabelDisplacement = lv_label_create(ui_engineConfigScreen);
     lv_obj_set_width(ui_LabelDisplacement, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_LabelDisplacement, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_LabelDisplacement, 100);
-    lv_obj_set_y(ui_LabelDisplacement, 79);
+    lv_obj_set_x(ui_LabelDisplacement, UI_SX(100));
+    lv_obj_set_y(ui_LabelDisplacement, UI_SY(79));
     lv_label_set_text(ui_LabelDisplacement, "Displacement");
     lv_obj_set_style_text_color(ui_LabelDisplacement, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_LabelDisplacement, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -178,8 +178,8 @@ void ui_engineConfigScreen_screen_init(void)
     ui_LabelTrigger = lv_label_create(ui_engineConfigScreen);
     lv_obj_set_width(ui_LabelTrigger, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_LabelTrigger, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_LabelTrigger, 350);
-    lv_obj_set_y(ui_LabelTrigger, 79);
+    lv_obj_set_x(ui_LabelTrigger, UI_SX(350));
+    lv_obj_set_y(ui_LabelTrigger, UI_SY(79));
     lv_label_set_text(ui_LabelTrigger, "Trigger");
     lv_obj_set_style_text_color(ui_LabelTrigger, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_LabelTrigger, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -188,8 +188,8 @@ void ui_engineConfigScreen_screen_init(void)
     ui_LabelCam = lv_label_create(ui_engineConfigScreen);
     lv_obj_set_width(ui_LabelCam, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_LabelCam, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_LabelCam, 600);
-    lv_obj_set_y(ui_LabelCam, 79);
+    lv_obj_set_x(ui_LabelCam, UI_SX(600));
+    lv_obj_set_y(ui_LabelCam, UI_SY(79));
     lv_label_set_text(ui_LabelCam, "Camshape");
     lv_obj_set_style_text_color(ui_LabelCam, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_LabelCam, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -199,8 +199,8 @@ void ui_engineConfigScreen_screen_init(void)
     lv_checkbox_set_text(ui_CheckboxDisp48, "4.8 l");
     lv_obj_set_width(ui_CheckboxDisp48, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_CheckboxDisp48, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_CheckboxDisp48, 110);
-    lv_obj_set_y(ui_CheckboxDisp48, 125);
+    lv_obj_set_x(ui_CheckboxDisp48, UI_SX(110));
+    lv_obj_set_y(ui_CheckboxDisp48, UI_SY(125));
     lv_obj_add_flag(ui_CheckboxDisp48, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_CheckboxDisp48,
                       LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
@@ -209,12 +209,12 @@ void ui_engineConfigScreen_screen_init(void)
     lv_obj_set_style_text_opa(ui_CheckboxDisp48, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_CheckboxDisp48, &ui_font_FontLabel, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    lv_obj_set_style_radius(ui_CheckboxDisp48, 0, LV_PART_INDICATOR | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(ui_CheckboxDisp48, UI_S(0), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(ui_CheckboxDisp48, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_CheckboxDisp48, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_color(ui_CheckboxDisp48, lv_color_hex(0xFFFFFF), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_opa(ui_CheckboxDisp48, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
-    lv_obj_set_style_radius(ui_CheckboxDisp48, 0, LV_PART_INDICATOR | LV_STATE_CHECKED);
+    lv_obj_set_style_radius(ui_CheckboxDisp48, UI_S(0), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_color(ui_CheckboxDisp48, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_opa(ui_CheckboxDisp48, 255, LV_PART_INDICATOR | LV_STATE_CHECKED);
 
@@ -222,8 +222,8 @@ void ui_engineConfigScreen_screen_init(void)
     lv_checkbox_set_text(ui_CheckboxDisp53, "5.3 l");
     lv_obj_set_width(ui_CheckboxDisp53, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_CheckboxDisp53, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_CheckboxDisp53, 110);
-    lv_obj_set_y(ui_CheckboxDisp53, 170);
+    lv_obj_set_x(ui_CheckboxDisp53, UI_SX(110));
+    lv_obj_set_y(ui_CheckboxDisp53, UI_SY(170));
     lv_obj_add_flag(ui_CheckboxDisp53, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_CheckboxDisp53,
                       LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
@@ -232,12 +232,12 @@ void ui_engineConfigScreen_screen_init(void)
     lv_obj_set_style_text_opa(ui_CheckboxDisp53, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_CheckboxDisp53, &ui_font_FontLabel, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    lv_obj_set_style_radius(ui_CheckboxDisp53, 0, LV_PART_INDICATOR | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(ui_CheckboxDisp53, UI_S(0), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(ui_CheckboxDisp53, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_CheckboxDisp53, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_color(ui_CheckboxDisp53, lv_color_hex(0xFFFFFF), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_opa(ui_CheckboxDisp53, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
-    lv_obj_set_style_radius(ui_CheckboxDisp53, 0, LV_PART_INDICATOR | LV_STATE_CHECKED);
+    lv_obj_set_style_radius(ui_CheckboxDisp53, UI_S(0), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_color(ui_CheckboxDisp53, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_opa(ui_CheckboxDisp53, 255, LV_PART_INDICATOR | LV_STATE_CHECKED);
 
@@ -245,8 +245,8 @@ void ui_engineConfigScreen_screen_init(void)
     lv_checkbox_set_text(ui_CheckboxDisp57, "5.7 l");
     lv_obj_set_width(ui_CheckboxDisp57, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_CheckboxDisp57, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_CheckboxDisp57, 110);
-    lv_obj_set_y(ui_CheckboxDisp57, 215);
+    lv_obj_set_x(ui_CheckboxDisp57, UI_SX(110));
+    lv_obj_set_y(ui_CheckboxDisp57, UI_SY(215));
     lv_obj_add_flag(ui_CheckboxDisp57, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_CheckboxDisp57,
                       LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
@@ -255,12 +255,12 @@ void ui_engineConfigScreen_screen_init(void)
     lv_obj_set_style_text_opa(ui_CheckboxDisp57, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_CheckboxDisp57, &ui_font_FontLabel, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    lv_obj_set_style_radius(ui_CheckboxDisp57, 0, LV_PART_INDICATOR | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(ui_CheckboxDisp57, UI_S(0), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(ui_CheckboxDisp57, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_CheckboxDisp57, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_color(ui_CheckboxDisp57, lv_color_hex(0xFFFFFF), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_opa(ui_CheckboxDisp57, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
-    lv_obj_set_style_radius(ui_CheckboxDisp57, 0, LV_PART_INDICATOR | LV_STATE_CHECKED);
+    lv_obj_set_style_radius(ui_CheckboxDisp57, UI_S(0), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_color(ui_CheckboxDisp57, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_opa(ui_CheckboxDisp57, 255, LV_PART_INDICATOR | LV_STATE_CHECKED);
 
@@ -268,8 +268,8 @@ void ui_engineConfigScreen_screen_init(void)
     lv_checkbox_set_text(ui_CheckboxDisp60, "6.0 l");
     lv_obj_set_width(ui_CheckboxDisp60, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_CheckboxDisp60, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_CheckboxDisp60, 110);
-    lv_obj_set_y(ui_CheckboxDisp60, 260);
+    lv_obj_set_x(ui_CheckboxDisp60, UI_SX(110));
+    lv_obj_set_y(ui_CheckboxDisp60, UI_SY(260));
     lv_obj_add_flag(ui_CheckboxDisp60, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_CheckboxDisp60,
                       LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
@@ -278,12 +278,12 @@ void ui_engineConfigScreen_screen_init(void)
     lv_obj_set_style_text_opa(ui_CheckboxDisp60, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_CheckboxDisp60, &ui_font_FontLabel, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    lv_obj_set_style_radius(ui_CheckboxDisp60, 0, LV_PART_INDICATOR | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(ui_CheckboxDisp60, UI_S(0), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(ui_CheckboxDisp60, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_CheckboxDisp60, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_color(ui_CheckboxDisp60, lv_color_hex(0xFFFFFF), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_opa(ui_CheckboxDisp60, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
-    lv_obj_set_style_radius(ui_CheckboxDisp60, 0, LV_PART_INDICATOR | LV_STATE_CHECKED);
+    lv_obj_set_style_radius(ui_CheckboxDisp60, UI_S(0), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_color(ui_CheckboxDisp60, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_opa(ui_CheckboxDisp60, 255, LV_PART_INDICATOR | LV_STATE_CHECKED);
 
@@ -291,8 +291,8 @@ void ui_engineConfigScreen_screen_init(void)
     lv_checkbox_set_text(ui_CheckboxDisp62, "6.2 l");
     lv_obj_set_width(ui_CheckboxDisp62, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_CheckboxDisp62, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_CheckboxDisp62, 110);
-    lv_obj_set_y(ui_CheckboxDisp62, 305);
+    lv_obj_set_x(ui_CheckboxDisp62, UI_SX(110));
+    lv_obj_set_y(ui_CheckboxDisp62, UI_SY(305));
     lv_obj_add_flag(ui_CheckboxDisp62, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_CheckboxDisp62,
                       LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
@@ -301,12 +301,12 @@ void ui_engineConfigScreen_screen_init(void)
     lv_obj_set_style_text_opa(ui_CheckboxDisp62, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_CheckboxDisp62, &ui_font_FontLabel, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    lv_obj_set_style_radius(ui_CheckboxDisp62, 0, LV_PART_INDICATOR | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(ui_CheckboxDisp62, UI_S(0), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(ui_CheckboxDisp62, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_CheckboxDisp62, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_color(ui_CheckboxDisp62, lv_color_hex(0xFFFFFF), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_opa(ui_CheckboxDisp62, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
-    lv_obj_set_style_radius(ui_CheckboxDisp62, 0, LV_PART_INDICATOR | LV_STATE_CHECKED);
+    lv_obj_set_style_radius(ui_CheckboxDisp62, UI_S(0), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_color(ui_CheckboxDisp62, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_opa(ui_CheckboxDisp62, 255, LV_PART_INDICATOR | LV_STATE_CHECKED);
 
@@ -314,8 +314,8 @@ void ui_engineConfigScreen_screen_init(void)
     lv_checkbox_set_text(ui_CheckboxDisp70, "7.0 l");
     lv_obj_set_width(ui_CheckboxDisp70, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_CheckboxDisp70, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_CheckboxDisp70, 110);
-    lv_obj_set_y(ui_CheckboxDisp70, 350);
+    lv_obj_set_x(ui_CheckboxDisp70, UI_SX(110));
+    lv_obj_set_y(ui_CheckboxDisp70, UI_SY(350));
     lv_obj_add_flag(ui_CheckboxDisp70, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_CheckboxDisp70,
                       LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
@@ -324,12 +324,12 @@ void ui_engineConfigScreen_screen_init(void)
     lv_obj_set_style_text_opa(ui_CheckboxDisp70, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_CheckboxDisp70, &ui_font_FontLabel, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    lv_obj_set_style_radius(ui_CheckboxDisp70, 0, LV_PART_INDICATOR | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(ui_CheckboxDisp70, UI_S(0), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(ui_CheckboxDisp70, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_CheckboxDisp70, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_color(ui_CheckboxDisp70, lv_color_hex(0xFFFFFF), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_opa(ui_CheckboxDisp70, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
-    lv_obj_set_style_radius(ui_CheckboxDisp70, 0, LV_PART_INDICATOR | LV_STATE_CHECKED);
+    lv_obj_set_style_radius(ui_CheckboxDisp70, UI_S(0), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_color(ui_CheckboxDisp70, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_opa(ui_CheckboxDisp70, 255, LV_PART_INDICATOR | LV_STATE_CHECKED);
 
@@ -337,8 +337,8 @@ void ui_engineConfigScreen_screen_init(void)
     lv_checkbox_set_text(ui_CheckboxTrig24, "24");
     lv_obj_set_width(ui_CheckboxTrig24, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_CheckboxTrig24, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_CheckboxTrig24, 365);
-    lv_obj_set_y(ui_CheckboxTrig24, 125);
+    lv_obj_set_x(ui_CheckboxTrig24, UI_SX(365));
+    lv_obj_set_y(ui_CheckboxTrig24, UI_SY(125));
     lv_obj_add_flag(ui_CheckboxTrig24, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_CheckboxTrig24,
                       LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
@@ -347,12 +347,12 @@ void ui_engineConfigScreen_screen_init(void)
     lv_obj_set_style_text_opa(ui_CheckboxTrig24, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_CheckboxTrig24, &ui_font_FontLabel, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    lv_obj_set_style_radius(ui_CheckboxTrig24, 0, LV_PART_INDICATOR | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(ui_CheckboxTrig24, UI_S(0), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(ui_CheckboxTrig24, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_CheckboxTrig24, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_color(ui_CheckboxTrig24, lv_color_hex(0xFFFFFF), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_opa(ui_CheckboxTrig24, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
-    lv_obj_set_style_radius(ui_CheckboxTrig24, 0, LV_PART_INDICATOR | LV_STATE_CHECKED);
+    lv_obj_set_style_radius(ui_CheckboxTrig24, UI_S(0), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_color(ui_CheckboxTrig24, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_opa(ui_CheckboxTrig24, 255, LV_PART_INDICATOR | LV_STATE_CHECKED);
 
@@ -360,8 +360,8 @@ void ui_engineConfigScreen_screen_init(void)
     lv_checkbox_set_text(ui_CheckboxTrig58, "58");
     lv_obj_set_width(ui_CheckboxTrig58, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_CheckboxTrig58, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_CheckboxTrig58, 365);
-    lv_obj_set_y(ui_CheckboxTrig58, 170);
+    lv_obj_set_x(ui_CheckboxTrig58, UI_SX(365));
+    lv_obj_set_y(ui_CheckboxTrig58, UI_SY(170));
     lv_obj_add_flag(ui_CheckboxTrig58, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_CheckboxTrig58,
                       LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
@@ -370,12 +370,12 @@ void ui_engineConfigScreen_screen_init(void)
     lv_obj_set_style_text_opa(ui_CheckboxTrig58, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_CheckboxTrig58, &ui_font_FontLabel, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    lv_obj_set_style_radius(ui_CheckboxTrig58, 0, LV_PART_INDICATOR | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(ui_CheckboxTrig58, UI_S(0), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(ui_CheckboxTrig58, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_CheckboxTrig58, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_color(ui_CheckboxTrig58, lv_color_hex(0xFFFFFF), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_opa(ui_CheckboxTrig58, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
-    lv_obj_set_style_radius(ui_CheckboxTrig58, 0, LV_PART_INDICATOR | LV_STATE_CHECKED);
+    lv_obj_set_style_radius(ui_CheckboxTrig58, UI_S(0), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_color(ui_CheckboxTrig58, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_opa(ui_CheckboxTrig58, 255, LV_PART_INDICATOR | LV_STATE_CHECKED);
 
@@ -383,8 +383,8 @@ void ui_engineConfigScreen_screen_init(void)
     lv_checkbox_set_text(ui_CheckboxCamshape1, "1");
     lv_obj_set_width(ui_CheckboxCamshape1, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_CheckboxCamshape1, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_CheckboxCamshape1, 610);
-    lv_obj_set_y(ui_CheckboxCamshape1, 125);
+    lv_obj_set_x(ui_CheckboxCamshape1, UI_SX(610));
+    lv_obj_set_y(ui_CheckboxCamshape1, UI_SY(125));
     lv_obj_add_flag(ui_CheckboxCamshape1, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_CheckboxCamshape1,
                       LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
@@ -393,12 +393,12 @@ void ui_engineConfigScreen_screen_init(void)
     lv_obj_set_style_text_opa(ui_CheckboxCamshape1, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_CheckboxCamshape1, &ui_font_FontLabel, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    lv_obj_set_style_radius(ui_CheckboxCamshape1, 0, LV_PART_INDICATOR | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(ui_CheckboxCamshape1, UI_S(0), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(ui_CheckboxCamshape1, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_CheckboxCamshape1, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_color(ui_CheckboxCamshape1, lv_color_hex(0xFFFFFF), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_opa(ui_CheckboxCamshape1, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
-    lv_obj_set_style_radius(ui_CheckboxCamshape1, 0, LV_PART_INDICATOR | LV_STATE_CHECKED);
+    lv_obj_set_style_radius(ui_CheckboxCamshape1, UI_S(0), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_color(ui_CheckboxCamshape1, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_opa(ui_CheckboxCamshape1, 255, LV_PART_INDICATOR | LV_STATE_CHECKED);
 
@@ -406,8 +406,8 @@ void ui_engineConfigScreen_screen_init(void)
     lv_checkbox_set_text(ui_CheckboxCamshape2, "2");
     lv_obj_set_width(ui_CheckboxCamshape2, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_CheckboxCamshape2, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_CheckboxCamshape2, 610);
-    lv_obj_set_y(ui_CheckboxCamshape2, 170);
+    lv_obj_set_x(ui_CheckboxCamshape2, UI_SX(610));
+    lv_obj_set_y(ui_CheckboxCamshape2, UI_SY(170));
     lv_obj_add_flag(ui_CheckboxCamshape2, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_CheckboxCamshape2,
                       LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
@@ -416,12 +416,12 @@ void ui_engineConfigScreen_screen_init(void)
     lv_obj_set_style_text_opa(ui_CheckboxCamshape2, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_CheckboxCamshape2, &ui_font_FontLabel, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    lv_obj_set_style_radius(ui_CheckboxCamshape2, 0, LV_PART_INDICATOR | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(ui_CheckboxCamshape2, UI_S(0), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(ui_CheckboxCamshape2, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_CheckboxCamshape2, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_color(ui_CheckboxCamshape2, lv_color_hex(0xFFFFFF), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_opa(ui_CheckboxCamshape2, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
-    lv_obj_set_style_radius(ui_CheckboxCamshape2, 0, LV_PART_INDICATOR | LV_STATE_CHECKED);
+    lv_obj_set_style_radius(ui_CheckboxCamshape2, UI_S(0), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_color(ui_CheckboxCamshape2, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_opa(ui_CheckboxCamshape2, 255, LV_PART_INDICATOR | LV_STATE_CHECKED);
 
@@ -429,8 +429,8 @@ void ui_engineConfigScreen_screen_init(void)
     lv_checkbox_set_text(ui_CheckboxCamshape4, "4");
     lv_obj_set_width(ui_CheckboxCamshape4, LV_SIZE_CONTENT);   /// 1
     lv_obj_set_height(ui_CheckboxCamshape4, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_CheckboxCamshape4, 610);
-    lv_obj_set_y(ui_CheckboxCamshape4, 215);
+    lv_obj_set_x(ui_CheckboxCamshape4, UI_SX(610));
+    lv_obj_set_y(ui_CheckboxCamshape4, UI_SY(215));
     lv_obj_add_flag(ui_CheckboxCamshape4, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_CheckboxCamshape4,
                       LV_OBJ_FLAG_PRESS_LOCK | LV_OBJ_FLAG_CLICK_FOCUSABLE | LV_OBJ_FLAG_GESTURE_BUBBLE |
@@ -439,20 +439,20 @@ void ui_engineConfigScreen_screen_init(void)
     lv_obj_set_style_text_opa(ui_CheckboxCamshape4, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_CheckboxCamshape4, &ui_font_FontLabel, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    lv_obj_set_style_radius(ui_CheckboxCamshape4, 0, LV_PART_INDICATOR | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(ui_CheckboxCamshape4, UI_S(0), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(ui_CheckboxCamshape4, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_CheckboxCamshape4, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_color(ui_CheckboxCamshape4, lv_color_hex(0xFFFFFF), LV_PART_INDICATOR | LV_STATE_DEFAULT);
     lv_obj_set_style_border_opa(ui_CheckboxCamshape4, 255, LV_PART_INDICATOR | LV_STATE_DEFAULT);
-    lv_obj_set_style_radius(ui_CheckboxCamshape4, 0, LV_PART_INDICATOR | LV_STATE_CHECKED);
+    lv_obj_set_style_radius(ui_CheckboxCamshape4, UI_S(0), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_color(ui_CheckboxCamshape4, lv_color_hex(0x313131), LV_PART_INDICATOR | LV_STATE_CHECKED);
     lv_obj_set_style_bg_opa(ui_CheckboxCamshape4, 255, LV_PART_INDICATOR | LV_STATE_CHECKED);
 
     ui_engConfSaveButton = lv_btn_create(ui_engineConfigScreen);
-    lv_obj_set_width(ui_engConfSaveButton, 120);
-    lv_obj_set_height(ui_engConfSaveButton, 50);
-    lv_obj_set_x(ui_engConfSaveButton, -33);
-    lv_obj_set_y(ui_engConfSaveButton, -26);
+    lv_obj_set_width(ui_engConfSaveButton, UI_SX(120));
+    lv_obj_set_height(ui_engConfSaveButton, UI_SY(50));
+    lv_obj_set_x(ui_engConfSaveButton, UI_SX(-33));
+    lv_obj_set_y(ui_engConfSaveButton, UI_SY(-26));
     lv_obj_set_align(ui_engConfSaveButton, LV_ALIGN_BOTTOM_RIGHT);
     lv_obj_add_flag(ui_engConfSaveButton, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_engConfSaveButton,
@@ -471,10 +471,10 @@ void ui_engineConfigScreen_screen_init(void)
     lv_obj_set_style_text_font(ui_LabelSave, &ui_font_FontLabel, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_engConfBackButton = lv_btn_create(ui_engineConfigScreen);
-    lv_obj_set_width(ui_engConfBackButton, 120);
-    lv_obj_set_height(ui_engConfBackButton, 40);
-    lv_obj_set_x(ui_engConfBackButton, -180);
-    lv_obj_set_y(ui_engConfBackButton, -30);
+    lv_obj_set_width(ui_engConfBackButton, UI_SX(120));
+    lv_obj_set_height(ui_engConfBackButton, UI_SY(40));
+    lv_obj_set_x(ui_engConfBackButton, UI_SX(-180));
+    lv_obj_set_y(ui_engConfBackButton, UI_SY(-30));
     lv_obj_set_align(ui_engConfBackButton, LV_ALIGN_BOTTOM_RIGHT);
     lv_obj_add_flag(ui_engConfBackButton, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_engConfBackButton,

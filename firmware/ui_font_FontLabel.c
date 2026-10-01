@@ -10,7 +10,7 @@
 #define UI_FONT_FONTLABEL 1
 #endif
 
-#if UI_FONT_FONTLABEL
+#if UI_FONT_FONTLABEL && !defined(UI_HIRES)
 
 /*-----------------
  *    BITMAPS

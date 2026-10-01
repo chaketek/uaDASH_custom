@@ -71,3 +71,40 @@ jobs:
           name: "dash_${{ matrix.display }}"
           path: "firmware/build/*"
 
+  # ESP-IDF build (Arduino core as a component), see docs/adr/0001-build-with-esp-idf.md
+  dash-fw-idf:
+    strategy:
+      matrix:
+        display: [ WAVESHARE_S3_LCD7B ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: date into header
+        working-directory: firmware
+        run: |
+          ./current_date.sh
+
+      - name: Build
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.4.2
+          target: esp32s3
+          command: idf.py -DBOARD=${{ matrix.display }} build
+
+      - name: Collect binaries
+        run: |
+          mkdir -p out
+          cp build/bootloader/bootloader.bin build/partition_table/partition-table.bin \
+             build/ota_data_initial.bin build/uaDash.bin out/
+          # flat folder: drop the directories from the paths in flash_args
+          sed -E 's#[^ ]*/##g' build/flash_args > out/flash_args
+          git rev-parse HEAD > out/release.txt
+          echo ${{ matrix.display }} >> out/release.txt
+
+      - name: Upload .bin
+        uses: actions/upload-artifact@v4
+        with:
+          name: "dash_idf_${{ matrix.display }}"
+          path: "out/*"

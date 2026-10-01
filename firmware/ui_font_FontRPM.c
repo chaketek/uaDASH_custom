@@ -10,7 +10,7 @@
 #define UI_FONT_FONTRPM 1
 #endif
 
-#if UI_FONT_FONTRPM
+#if UI_FONT_FONTRPM && !defined(UI_HIRES)
 
 /*-----------------
  *    BITMAPS

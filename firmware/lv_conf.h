@@ -61,10 +61,19 @@
 
 #else       /*LV_MEM_CUSTOM*/
     // #define LV_MEM_SIZE (256U * 1024U)
+#if defined(WAVESHARE_S3_LCD7B)
+    /*malloc puts blocks > 4kB (render layers) in PSRAM, which competes with the
+     *framebuffer scanout. Prefer internal RAM, fall back to PSRAM.*/
+    #define LV_MEM_CUSTOM_INCLUDE <esp_heap_caps.h>
+    #define LV_MEM_CUSTOM_ALLOC(size)        heap_caps_malloc_prefer(size, 2, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT, MALLOC_CAP_SPIRAM)
+    #define LV_MEM_CUSTOM_FREE               heap_caps_free
+    #define LV_MEM_CUSTOM_REALLOC(ptr, size) heap_caps_realloc_prefer(ptr, size, 2, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT, MALLOC_CAP_SPIRAM)
+#else
     #define LV_MEM_CUSTOM_INCLUDE <stdlib.h>   /*Header for the dynamic memory function*/
     #define LV_MEM_CUSTOM_ALLOC   malloc
     #define LV_MEM_CUSTOM_FREE    free
     #define LV_MEM_CUSTOM_REALLOC realloc
+#endif
 #endif     /*LV_MEM_CUSTOM*/
 
 /*Number of the intermediate memory buffer used during rendering and other internal processing mechanisms.
@@ -280,7 +289,11 @@
  *-----------*/
 
 /*1: Show CPU usage and FPS count*/
+#ifdef PERF_MONITOR
+#define LV_USE_PERF_MONITOR 1
+#else
 #define LV_USE_PERF_MONITOR 0
+#endif
 #if LV_USE_PERF_MONITOR
     #define LV_USE_PERF_MONITOR_POS LV_ALIGN_BOTTOM_RIGHT
 #endif
@@ -374,7 +387,7 @@
 #define LV_FONT_MONTSERRAT_26 1
 #define LV_FONT_MONTSERRAT_28 0
 #define LV_FONT_MONTSERRAT_30 0
-#define LV_FONT_MONTSERRAT_32 0
+#define LV_FONT_MONTSERRAT_32 1
 #define LV_FONT_MONTSERRAT_34 0
 #define LV_FONT_MONTSERRAT_36 0
 #define LV_FONT_MONTSERRAT_38 0

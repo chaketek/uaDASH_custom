@@ -1,5 +1,6 @@
 #pragma once
 
+#include "sdkconfig.h"
 #include "config.h"
 #include "lvgl.h"
 #include "lv_conf.h"
@@ -207,13 +208,9 @@
 // Backlight is driven by IO expander PWM (no direct GPIO)
 #define LCD_PIN_BACKLIGHT   GPIO_NUM_NC
 
-// UI resolution (SquareLine project is 800x480)
-#define LCD_WIDTH   800U
-#define LCD_HEIGHT   480U
-
-// physical panel resolution, UI is drawn centered
-#define LCD_PANEL_WIDTH     1024U
-#define LCD_PANEL_HEIGHT    600U
+// resolution (UI is scaled from 800x480, see ui_scale.h)
+#define LCD_WIDTH   1024U
+#define LCD_HEIGHT   600U
 
 #define LCD_PIN_HENABLE     GPIO_NUM_5
 #define LCD_PIN_VSYNC       GPIO_NUM_3
@@ -240,28 +237,48 @@
 #define LCD_PIN_DATA_B3     GPIO_NUM_17
 #define LCD_PIN_DATA_B4     GPIO_NUM_10
 
-// timing and polarity (ST7262, Waveshare demo uses 30MHz with bounce buffers)
-// LovyanGFX keeps porch/pulse as int8_t (max 127), so the vendor's
-// hsync 162/152 can't be used as is; the panel runs in DE mode anyway.
-// Above ~20MHz the PSRAM framebuffer DMA underruns and the image shifts.
+// timing (ST7262), driven by esp_lcd with bounce buffers.
+// The framebuffer scanout is limited by PSRAM bandwidth (Espressif ESP-FAQ:
+// octal PSRAM 80MHz ~22MHz pclk, 120MHz ~30MHz). Low refresh makes the panel flicker.
+// If the bounce buffers underrun (screen change redraws everything) the image
+// can stay shifted by LCD_BOUNCE_LINES, the driver doesn't resync this case.
+// Every combination below passed the screen change test (see the ADR).
+#if CONFIG_SPIRAM_SPEED >= 120
+// ESP-IDF build with 120MHz PSRAM: ~36.8Hz refresh
+#define LCD_FREQ                30000000U
+#define LCD_HSYNC_PULSE_WIDTH   40
+#define LCD_HSYNC_BACK_PORCH    120
+#define LCD_BOUNCE_LINES        10
+#elif CONFIG_SPIRAM_XIP_FROM_PSRAM
+// ESP-IDF build with 80MHz PSRAM, 64KB data cache and code/fonts in PSRAM: ~26.2Hz.
+// 24MHz needs 20 bounce lines, with 10 a screen change shifts the image.
+#define LCD_FREQ                24000000U
+#define LCD_HSYNC_PULSE_WIDTH   162
+#define LCD_HSYNC_BACK_PORCH    152
+#define LCD_BOUNCE_LINES        20
+#else
+// Arduino IDE (80MHz PSRAM): higher clocks make the image jump while the whole
+// screen is redrawn (screen change), 16MHz (~17.5Hz refresh) stays clean
 #define LCD_FREQ                16000000U
+#define LCD_HSYNC_PULSE_WIDTH   162
+#define LCD_HSYNC_BACK_PORCH    152
+#define LCD_BOUNCE_LINES        10
+#endif
 #define LCD_PCLK_ACTIVE_NEG     1
 #define LCD_DE_IDLE_HIGH        0
 #define LCD_PCLK_IDLE_HIGH      0
 
 #define LCD_HSYNC_POLARITY      0
 #define LCD_HSYNC_FRONT_PORCH   48
-#define LCD_HSYNC_PULSE_WIDTH   40
-#define LCD_HSYNC_BACK_PORCH    120
 
 #define LCD_VSYNC_POLARITY      0
 #define LCD_VSYNC_FRONT_PORCH   3
 #define LCD_VSYNC_PULSE_WIDTH   45
 #define LCD_VSYNC_BACK_PORCH    13
 
-// touch (GT911 reports panel coordinates)
-#define TOUCH_XMAX  LCD_PANEL_WIDTH - 1
-#define TOUCH_YMAX  LCD_PANEL_HEIGHT - 1
+// touch
+#define TOUCH_XMAX  LCD_WIDTH - 1
+#define TOUCH_YMAX  LCD_HEIGHT - 1
 
 #define TOUCH_PIN_INT   GPIO_NUM_NC   // GPIO4, used only for address select on reset
 #define TOUCH_PIN_RST   GPIO_NUM_NC   // IO expander EXIO1
@@ -270,6 +287,10 @@
 
 #define TOUCH_FREQ      400000U
 #define TOUCH_ROTATION  0
+
+// bounce buffer lines (internal RAM, x2): LCD_BOUNCE_LINES above
+// LVGL draw buffer lines (internal RAM)
+#define LCD_DRAW_BUF_LINES  60
 
 // IO expander (I2C 0x24, shared bus with touch)
 #define EXPANDER_I2C_PORT   1
@@ -356,17 +377,9 @@
 #error "Please choose LCD type in config.h"
 #endif
 
-#ifndef LCD_PANEL_WIDTH
-#define LCD_PANEL_WIDTH     LCD_WIDTH
-#define LCD_PANEL_HEIGHT    LCD_HEIGHT
-#endif
-
-// UI offset on the physical panel
-#define LCD_OFFSET_X    ((LCD_PANEL_WIDTH - LCD_WIDTH) / 2)
-#define LCD_OFFSET_Y    ((LCD_PANEL_HEIGHT - LCD_HEIGHT) / 2)
 
 
-
+#ifndef WAVESHARE_S3_LCD7B
 class LCD_Panel : public lgfx::LGFX_Device {
   lgfx::Bus_RGB _bus_instance;
   lgfx::Touch_GT911 _touch_instance;
@@ -376,7 +389,11 @@ class LCD_Panel : public lgfx::LGFX_Device {
 };
 
 extern LCD_Panel display;
+#endif
 extern int brightnessVal;
+#ifdef PERF_MONITOR
+extern uint32_t flushTimeUs;
+#endif
 
 #ifdef __cplusplus
 extern "C" {

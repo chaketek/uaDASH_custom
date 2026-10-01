@@ -14,7 +14,7 @@ The project can work on
 * GUITION JC8048W550C
 * Waveshare ESP32-S3-Touch-LCD-5 800x480
 * Waveshare ESP32-S3-Touch-LCD-7 800x480
-* Waveshare ESP32-S3-Touch-LCD-7B 1024x600 (UI 800x480 centered)
+* Waveshare ESP32-S3-Touch-LCD-7B 1024x600 (built with ESP-IDF, see [README-ESP32-S3-Touch-LCD-7B.md](README-ESP32-S3-Touch-LCD-7B.md))
 
 For change brightness use swipe up/down on main screen (ESP32-S3-Touch-LCD-7 if solder 1 wire, ESP32-S3-Touch-LCD-5 not tested).
 
@@ -88,6 +88,8 @@ Required library:
 [README-ESP32-S3-Touch-LCD-7.md](README-ESP32-S3-Touch-LCD-7.md)
 
 [README-ESP32-S3-Touch-LCD-7B.md](README-ESP32-S3-Touch-LCD-7B.md)
+
+Architecture decisions: [docs/adr](docs/adr)
 
 ## FAQ
 

@@ -1,0 +1,16 @@
+# OPTIONAL, NOT USED BY DEFAULT: 120MHz octal PSRAM + flash (experimental in ESP-IDF).
+# 7B panel then runs at 30MHz pclk (~37Hz refresh). See docs/adr/0001-build-with-esp-idf.md
+#
+# Risk: PSRAM timing is tuned at boot. If the chip temperature changes by about
+# 20 degC after power on (self heating included), PSRAM access may fail randomly.
+# CONFIG_SPIRAM_TIMING_TUNING_POINT_VIA_TEMPERATURE_SENSOR can't be used on the
+# 7B: it only supports GigaDevice/XMC flash, the board has vendor 0x46.
+#
+# Use (on top of the board defaults):
+#   idf.py -B build_psram120 -DSDKCONFIG=build_psram120/sdkconfig
+#          "-DSDKCONFIG_DEFAULTS=sdkconfig.defaults;sdkconfig.defaults.WAVESHARE_S3_LCD7B;sdkconfig.defaults.psram120" build
+
+CONFIG_IDF_EXPERIMENTAL_FEATURES=y
+CONFIG_SPI_FLASH_HPM_ENA=y
+CONFIG_ESPTOOLPY_FLASHFREQ_120M=y
+CONFIG_SPIRAM_SPEED_120M=y

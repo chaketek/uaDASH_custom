@@ -53,6 +53,10 @@ void _ui_screen_change(lv_obj_t ** target, lv_scr_load_anim_t fademode, int spd,
 {
     if(*target == NULL)
         target_init();
+#ifdef UI_SCREEN_ANIM
+    // moving screens are too heavy for the framebuffer bandwidth
+    fademode = UI_SCREEN_ANIM;
+#endif
     lv_scr_load_anim(*target, fademode, spd, delay, false);
 }
 

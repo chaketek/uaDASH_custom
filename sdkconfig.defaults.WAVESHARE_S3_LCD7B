@@ -1,0 +1,9 @@
+# 1024x600 RGB panel: the framebuffer scanout is limited by PSRAM bandwidth.
+# See docs/adr/0001-build-with-esp-idf.md
+# With these settings the panel runs at 24MHz pclk with 20 bounce lines (~26Hz refresh, display_driver.h).
+
+# code and const data (fonts) run from PSRAM instead of flash
+CONFIG_SPIRAM_XIP_FROM_PSRAM=y
+
+CONFIG_ESP32S3_DATA_CACHE_64KB=y
+CONFIG_ESP32S3_DATA_CACHE_LINE_64B=y

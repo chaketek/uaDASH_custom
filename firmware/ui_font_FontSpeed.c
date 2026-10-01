@@ -10,7 +10,7 @@
 #define UI_FONT_FONTSPEED 1
 #endif
 
-#if UI_FONT_FONTSPEED
+#if UI_FONT_FONTSPEED && !defined(UI_HIRES)
 
 /*-----------------
  *    BITMAPS

@@ -1,5 +1,7 @@
 #include "display_driver.h"
 
+#ifndef WAVESHARE_S3_LCD7B  // 7B uses display_driver_rgb.cpp
+
 
 // Dislay driver config
 
@@ -56,10 +58,10 @@ LCD_Panel::LCD_Panel(void) {
   }
   {
     auto cfg = _panel_instance.config();
-    cfg.memory_width = LCD_PANEL_WIDTH;   //800;
-    cfg.memory_height = LCD_PANEL_HEIGHT;  //480;
-    cfg.panel_width = LCD_PANEL_WIDTH;    //800;
-    cfg.panel_height = LCD_PANEL_HEIGHT;   //480;
+    cfg.memory_width = LCD_WIDTH;   //800;
+    cfg.memory_height = LCD_HEIGHT;  //480;
+    cfg.panel_width = LCD_WIDTH;    //800;
+    cfg.panel_height = LCD_HEIGHT;   //480;
     cfg.offset_x = 0;
     cfg.offset_y = 0;
     _panel_instance.config(cfg);
@@ -88,59 +90,18 @@ LCD_Panel::LCD_Panel(void) {
 
 LCD_Panel display;
 int brightnessVal = 205;
-
-#ifdef WAVESHARE_S3_LCD7B
-static uint8_t expanderOut = 0xFF;
-
-static void expanderWrite(uint8_t reg, uint8_t val) {
-  uint8_t buf[2] = { reg, val };
-  auto res = lgfx::i2c::transactionWrite(EXPANDER_I2C_PORT, EXPANDER_I2C_ADDR, buf, 2, TOUCH_FREQ);
-#ifdef DEBUG
-  Serial.printf("expander reg 0x%02X <- 0x%02X : %s\n", reg, val, res.has_value() ? "ok" : "fail");
+#ifdef PERF_MONITOR
+uint32_t flushTimeUs = 0;
 #endif
-}
 
-static void expanderDigitalWrite(uint8_t pin, bool level) {
-  if (level) {
-    expanderOut |= (1 << pin);
-  } else {
-    expanderOut &= ~(1 << pin);
-  }
-  expanderWrite(EXPANDER_REG_OUTPUT, expanderOut);
-}
-
-// expander PWM is inverted (0: full bright, 255: off)
-static void writeBacklight(int val) {
-  expanderWrite(EXPANDER_REG_PWM, (uint8_t)(255 - val));
-}
-#else
 static void writeBacklight(int val) {
   ledcWrite(LCD_PIN_BACKLIGHT, val);
 }
-#endif
 
 void lcd_panel_start() {
 
-#ifdef WAVESHARE_S3_LCD7B
-  lgfx::i2c::init(EXPANDER_I2C_PORT, TOUCH_PIN_SDA, TOUCH_PIN_SCL);
-  expanderWrite(EXPANDER_REG_MODE, 0xFF);  // all outputs
-  expanderOut = 0xFF;                      // LCD on, backlight on, CAN mode (EXIO5 high)
-  expanderDigitalWrite(EXIO_TP_RST, LOW);
-
-  // GT911 reset, INT low selects address 0x5D
-  pinMode(TOUCH_PIN_ADDR_SEL, OUTPUT);
-  digitalWrite(TOUCH_PIN_ADDR_SEL, LOW);
-  delay(20);
-  expanderDigitalWrite(EXIO_TP_RST, HIGH);
-  delay(10);
-  pinMode(TOUCH_PIN_ADDR_SEL, INPUT);
-  delay(50);
-
-  writeBacklight(brightnessVal);
-#else
   ledcAttach(LCD_PIN_BACKLIGHT, 1000, 8);
   ledcWrite(LCD_PIN_BACKLIGHT, brightnessVal);
-#endif
 #if defined(WAVESHARE_S3_LCD7) || defined(WAVESHARE_S3_LCD5)
   pinMode(4, OUTPUT);
   /* Initialize IO expander */
@@ -169,10 +130,16 @@ void disp_flush_callback(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t 
   uint32_t w = (area->x2 - area->x1 + 1);
   uint32_t h = (area->y2 - area->y1 + 1);
 
+#ifdef PERF_MONITOR
+  uint32_t t0 = micros();
+#endif
   display.startWrite();
-  display.setAddrWindow(area->x1 + LCD_OFFSET_X, area->y1 + LCD_OFFSET_Y, w, h);
+  display.setAddrWindow(area->x1, area->y1, w, h);
   display.pushPixelsDMA((uint16_t *)px_map, w * h, true);
   display.endWrite();
+#ifdef PERF_MONITOR
+  flushTimeUs += micros() - t0;
+#endif
 
   lv_disp_flush_ready(disp);
 }
@@ -182,10 +149,8 @@ void touchpad_read(lv_indev_drv_t *indev_driver, lv_indev_data_t *data) {
   data->state = LV_INDEV_STATE_REL;
   if (display.getTouch(&x, &y)) {
     data->state = LV_INDEV_STATE_PR;
-    x -= LCD_OFFSET_X;
-    y -= LCD_OFFSET_Y;
-    data->point.x = x < 0 ? 0 : (x >= (int32_t)LCD_WIDTH ? LCD_WIDTH - 1 : x);
-    data->point.y = y < 0 ? 0 : (y >= (int32_t)LCD_HEIGHT ? LCD_HEIGHT - 1 : y);
+    data->point.x = x;
+    data->point.y = y;
   }
 }
 
@@ -203,3 +168,5 @@ void setBrightness(int val) {
   writeBacklight(brightnessVal);
 // #endif
 }
+
+#endif  // WAVESHARE_S3_LCD7B

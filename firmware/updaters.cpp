@@ -18,7 +18,7 @@ void TaskHeartbeat(void *pvParameters)
     {
       error_count++;
 #ifdef DEBUG
-      Serial.printf("TaskHeartbeat error_count: %d\n", error_count);
+      Serial.printf("TaskHeartbeat error_count: %" PRIu32 "\n", error_count);
 #endif
     }
     countHeartbeat++;
@@ -168,6 +168,26 @@ void TaskCANReceiver(void *pvParameters)
         }
       }
     }
+#ifdef DEMO_DATA
+    // fake sweeping values for testing the display without ECU
+    if (xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE)
+    {
+      uint32_t t = millis() % 8000;
+      uint32_t tri = t < 4000 ? t : 8000 - t;  // 0..4000..0
+      myData.rpm = 800 + tri * 7000 / 4000;
+      myData.speed = tri * 200 / 4000;
+      myData.map = 30 + tri * 220 / 4000;
+      myData.afr = 10 + tri * 10.0 / 4000;
+      myData.clt = 20 + tri * 100 / 4000;
+      myData.iat = tri * 80 / 4000;
+      myData.oilTemp = 40 + tri * 80 / 4000;
+      myData.oilPress = tri * 500 / 4000;
+      myData.fuelPress = tri * 500 / 4000;
+      myData.fuelLevel = tri * 100 / 4000;
+      myData.Vbat = 11 + tri * 3.0 / 4000;
+      xSemaphoreGive(dataMutex);
+    }
+#endif
     vTaskDelay(pdMS_TO_TICKS(5));
   }
 }
