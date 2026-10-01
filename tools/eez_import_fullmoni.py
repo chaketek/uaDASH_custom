@@ -3,8 +3,9 @@
 
 Only the part used on the uaDASH is taken over: sensor gauges on the left,
 tachometer, gear and AFR. Speed, clock, trip/odo, fuel gauge, the lambda table
-and warnings without rusEFI data are left out. The 800x256 design is put
-unchanged into a container in the middle of the 800x480 screen.
+and warnings without rusEFI data are left out. What is left only covers the
+left 3/4 of the 800x256 design, so it is scaled up by BAND_SCALE (widgets,
+fonts and images) to use the screen width, in a container centered on that part.
 
     python tools/eez_import_fullmoni.py <path to eez002.eez-project>
 """
@@ -16,10 +17,16 @@ import shutil
 import sys
 import uuid
 
+from eez_build import scale_bitmap, scale_font, scale_widget
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT = os.path.join(ROOT, 'eez', 'uaDash.eez-project')
 
 DESIGN_W, DESIGN_H = 800, 256
+# horizontal extent of the kept widgets in the design (rendered), and the scale
+# that makes it fill the 800px screen width
+CONTENT_X0, CONTENT_X1 = 6, 607
+BAND_SCALE = 1.3
 
 # not shown on the uaDASH
 DROP = {
@@ -61,13 +68,18 @@ def main():
 
     src_screen = src['userPages'][0]['components'][0]
     band_children = [filter_tree(c) for c in src_screen['children'] if c.get('identifier') not in DROP]
+    for c in band_children:
+        scale_widget(c, False, BAND_SCALE)
+    band_w, band_h = round(DESIGN_W * BAND_SCALE), round(DESIGN_H * BAND_SCALE)
+    # the band is centered, shift it so the kept part is in the middle of the screen
+    band_x = round((DESIGN_W / 2 - (CONTENT_X0 + CONTENT_X1) / 2) * BAND_SCALE)
 
     old_page = next(p for p in project['userPages'] if p['name'] == 'main_screen')
     old_screen = old_page['components'][0]
 
     band = {
         'objID': new_id(), 'type': 'LVGLContainerWidget',
-        'left': 0, 'top': 0, 'width': DESIGN_W, 'height': DESIGN_H,
+        'left': band_x, 'top': 0, 'width': band_w, 'height': band_h,
         'customInputs': [], 'customOutputs': [],
         'style': {'objID': new_id(), 'useStyle': 'default', 'conditionalStyles': [], 'childStyles': []},
         'timeline': [], 'eventHandlers': [], 'identifier': 'dashboardBand',
@@ -89,6 +101,11 @@ def main():
 
     fonts, images = set(), set()
     collect(band_children, fonts, images)
+    # replace the fonts and images of an earlier import
+    src_fonts = {f['name'] for f in src['fonts']}
+    src_images = {b['name'] for b in src['bitmaps']}
+    project['fonts'] = [f for f in project['fonts'] if f['name'] not in src_fonts]
+    project['bitmaps'] = [b for b in project['bitmaps'] if b['name'] not in src_images]
     have_fonts = {f['name'] for f in project['fonts']}
     have_images = {b['name'] for b in project['bitmaps']}
     src_dir = os.path.dirname(os.path.abspath(sys.argv[1]))
@@ -102,8 +119,13 @@ def main():
         if not os.path.exists(dst):
             shutil.copyfile(os.path.join(src_dir, font_file), dst)
         f['source']['filePath'] = 'assets/fonts/' + font_file
+        scale_font(f, BAND_SCALE)
         project['fonts'].append(f)
-    project['bitmaps'] += [b for b in src['bitmaps'] if b['name'] in images and b['name'] not in have_images]
+    for b in src['bitmaps']:
+        if b['name'] in images and b['name'] not in have_images:
+            b = copy.deepcopy(b)
+            scale_bitmap(b, BAND_SCALE)
+            project['bitmaps'].append(b)
 
     with open(PROJECT, 'w', encoding='utf-8', newline='\n') as f:
         json.dump(project, f, indent=2, ensure_ascii=False)

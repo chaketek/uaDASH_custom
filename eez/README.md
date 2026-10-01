@@ -57,8 +57,9 @@ python tools/eez_import_fullmoni.py <path to FULLMONI-WIDE/Firmware/eez/eez002/e
 
 It replaces `main_screen` with the left gauges (water, IAT, oil temp, MAP, oil press,
 battery), the tachometer (needle, arc, peak hold), RPM value, gear and AFR, inside the
-container `dashboardBand` centered on the screen. Speed, clock, trip/odo, fuel gauge and the
-lambda table are left out. Running it again overwrites changes made to the main screen.
+container `dashboardBand`. Speed, clock, trip/odo, fuel gauge and the lambda table are left
+out; what is left is scaled by `BAND_SCALE` (1.3: widgets, fonts and images) and centered so it
+uses the screen width. Running it again overwrites changes made to the main screen.
 
 ## Conversion notes (SquareLine -> EEZ, `tools/squareline_to_eez.py`)
 

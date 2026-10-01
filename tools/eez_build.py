@@ -47,23 +47,24 @@ LEFT_ALIGNS = {'TOP_LEFT', 'LEFT_MID', 'BOTTOM_LEFT', 'DEFAULT', None}
 RIGHT_ALIGNS = {'TOP_RIGHT', 'RIGHT_MID', 'BOTTOM_RIGHT'}
 
 
-def s(v):
-    return int(round(v * SCALE)) if isinstance(v, (int, float)) and not isinstance(v, bool) else v
+def s(v, factor=SCALE):
+    return int(round(v * factor)) if isinstance(v, (int, float)) and not isinstance(v, bool) else v
 
 
-def scale_widget(w, top_level):
+def scale_widget(w, top_level, factor=SCALE):
+    """scale position, size, pivot and pixel styles of a widget and its children"""
     for key, unit in (('left', 'leftUnit'), ('top', 'topUnit'), ('width', 'widthUnit'), ('height', 'heightUnit')):
         if key in w and w.get(unit, 'px') in ('px', 'content'):
-            w[key] = s(w[key])
+            w[key] = s(w[key], factor)
     for key in ('pivotX', 'pivotY'):
         if key in w:
-            w[key] = s(w[key])
+            w[key] = s(w[key], factor)
     align = None
     for part in w.get('localStyles', {}).get('definition', {}).values():
         for state, props in part.items():
             for k in list(props):
                 if k in PX_STYLE_PROPS:
-                    props[k] = s(props[k])
+                    props[k] = s(props[k], factor)
             if state == 'DEFAULT' and 'align' in props:
                 align = props['align']
     if top_level and w.get('leftUnit', 'px') == 'px':
@@ -73,13 +74,19 @@ def scale_widget(w, top_level):
         elif align in RIGHT_ALIGNS:
             w['left'] -= int(OFFSET_X)
     for c in w.get('children', []):
-        scale_widget(c, False)
+        scale_widget(c, False, factor)
 
 
-def scale_bitmap(b):
+def scale_font(f, factor=SCALE):
+    f['source']['size'] = s(f['source']['size'], factor)
+    for k in ('embeddedFontFile', 'lvglBinFile', 'lvglSourceFile'):
+        f.pop(k, None)    # EEZ Studio regenerates the font from the TTF
+
+
+def scale_bitmap(b, factor=SCALE):
     head, data = b['image'].split(',', 1)
     img = Image.open(io.BytesIO(base64.b64decode(data)))
-    img = img.resize((max(1, s(img.width)), max(1, s(img.height))), Image.LANCZOS)
+    img = img.resize((max(1, s(img.width, factor)), max(1, s(img.height, factor))), Image.LANCZOS)
     buf = io.BytesIO()
     img.save(buf, 'PNG')
     b['image'] = head + ',' + base64.b64encode(buf.getvalue()).decode()
@@ -97,9 +104,7 @@ def make_hires(project):
         for c in screen.get('children', []):
             scale_widget(c, True)
     for f in p['fonts']:
-        f['source']['size'] = s(f['source']['size'])
-        for k in ('embeddedFontFile', 'lvglBinFile', 'lvglSourceFile'):
-            f.pop(k, None)    # EEZ Studio regenerates the font from the TTF
+        scale_font(f)
     for b in p['bitmaps']:
         scale_bitmap(b)
     return p
